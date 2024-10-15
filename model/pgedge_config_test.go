@@ -73,7 +73,7 @@ func TestNewClusterConfigFromBytes(t *testing.T) {
 		assert.Equal(t, "testusername", config.Database.Databases[0].Username)
 		assert.Equal(t, "testpassword", config.Database.Databases[0].Password)
 
-		config.Database.Redact()
+		config.Database.Sanitize()
 		assert.NotEqual(t, "testpassword", config.Database.Databases[0].Password)
 	})
 

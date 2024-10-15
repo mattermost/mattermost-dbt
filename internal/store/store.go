@@ -143,7 +143,7 @@ func (sqlStore *SQLStore) exec(e execer, sql string, args ...interface{}) (sql.R
 	return e.Exec(sql, args...)
 }
 
-// exec executes the given query, building the necessary sql.
+// execBuilder executes the given query, building the necessary sql.
 func (sqlStore *SQLStore) execBuilder(e execer, b builder) (sql.Result, error) {
 	sql, args, err := b.ToSql()
 	if err != nil {
@@ -153,7 +153,7 @@ func (sqlStore *SQLStore) execBuilder(e execer, b builder) (sql.Result, error) {
 	return sqlStore.exec(e, sql, args...)
 }
 
-// exec executes the given query, building the necessary sql.
+// Close closes the connection with the sqlStore
 func (sqlStore *SQLStore) Close() {
 	sqlStore.db.Close()
 }

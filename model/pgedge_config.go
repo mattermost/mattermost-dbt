@@ -50,9 +50,9 @@ type PgedgeNode struct {
 	Path      string `json:"path"`
 }
 
-func (dbc *PgedgeDatabaseConfig) Redact() {
+func (dbc *PgedgeDatabaseConfig) Sanitize() {
 	for _, database := range dbc.Databases {
-		database.Redact()
+		database.Sanitize()
 	}
 }
 
@@ -73,7 +73,7 @@ func (ng *PgedgeNodeGroupsConfig) Nodes() []PgedgeNode {
 	return nodes
 }
 
-func (db *PgedgeDatabase) Redact() {
+func (db *PgedgeDatabase) Sanitize() {
 	db.Password = "****************"
 }
 
