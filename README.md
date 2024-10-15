@@ -4,7 +4,7 @@ This repository contains tooling for reviewing Mattermost databases with complex
 
 ### Building
 
-Before building the `mmdbt` CLI, ensure that you have Go installed and are using a version that it at least a new as the one [referenced here](https://github.com/mattermost/mattermost-dbt/blob/main/go.mod#L3).
+Before building the `mmdbt` CLI, ensure that you have Go installed and are using a version that is at least as new as the one [referenced here](https://github.com/mattermost/mattermost-dbt/blob/main/go.mod#L3).
 
 To build and install `mmdbt` locally:
 
