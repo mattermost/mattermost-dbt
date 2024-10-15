@@ -37,20 +37,20 @@ func NewStoreForPgedgeNode(db *model.PgedgeDatabase, node *model.PgedgeNode, log
 	return store, nil
 }
 
-func NewStoresForAllPgedgeNodes(pgedgeConfig *model.PgedgeClusterConfig, logger log.FieldLogger) ([]PgedgeNodeStore, error) {
+func NewStoresForAllPgedgeNodes(pgedgeConfig *model.PgedgeClusterConfig, logger log.FieldLogger) ([]*PgedgeNodeStore, error) {
 	nodes := pgedgeConfig.NodeGroups.Nodes()
 	if len(nodes) == 0 {
 		return nil, errors.New("config contains no database nodes")
 	}
 
-	var nodesStores []PgedgeNodeStore
+	var nodesStores []*PgedgeNodeStore
 	for _, node := range nodes {
 		store, err := NewStoreForPgedgeNode(pgedgeConfig.Database.Databases[0], &node, logger)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to create store for pgEdge node %s", node.Name)
 		}
 
-		nodesStores = append(nodesStores, PgedgeNodeStore{
+		nodesStores = append(nodesStores, &PgedgeNodeStore{
 			&node,
 			store,
 		})

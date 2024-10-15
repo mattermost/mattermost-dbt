@@ -4,3 +4,4 @@ build/_output/
 .idea
 vendor/
 bin/*
+/mmdbt
