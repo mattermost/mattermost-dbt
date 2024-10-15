@@ -19,7 +19,7 @@ APPNAME := mmdbt
 BUILD_HASH = $(shell git rev-parse HEAD)
 BUILD_TIME := $(shell date -u +%Y%m%d.%H%M%S)
 
-LDFLAGS += -X "github.com/mattermost/mmdbt/model.BuildHash=$(BUILD_HASH)"
+LDFLAGS += -X "github.com/mattermost/mattermost-dbt/model.BuildHash=$(BUILD_HASH)"
 
 ################################################################################
 
@@ -111,6 +111,12 @@ build:
 		exit 1; \
 	fi; \
 	env GOOS=linux $(GO) build -ldflags '$(LDFLAGS)' -o $(APPNAME) ./cmd/$(APPNAME)
+
+# Build and install locally
+.PHONY: install
+install:
+	@echo Installing mmdbt...
+	$(GO) install -ldflags '$(LDFLAGS)' ./cmd/$(APPNAME)
 
 # Run go mod verify.
 verify-gomod:

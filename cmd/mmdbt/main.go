@@ -16,6 +16,7 @@ func init() {
 	viper.SetEnvPrefix("MMDBT")
 	viper.AutomaticEnv()
 
+	rootCmd.AddCommand(verifyIndexesCmd)
 	rootCmd.AddCommand(versionCmd)
 }
 
