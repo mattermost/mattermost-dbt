@@ -6,71 +6,60 @@ import (
 )
 
 type PgedgeClusterConfig struct {
-	Name       string                 `json:"name"`
-	Style      string                 `json:"style"`
-	CreateDate string                 `json:"create_date"`
-	Remote     PgedgeHostConfig       `json:"remote,omitempty"`
-	LocalHost  PgedgeHostConfig       `json:"localhost,omitempty"`
-	Database   PgedgeDatabaseConfig   `json:"database"`
-	NodeGroups PgedgeNodeGroupsConfig `json:"node_groups"`
-}
-
-type PgedgeHostConfig struct {
-	OSUser string `json:"os_user"`
-	SSHKey string `json:"ssh_key"`
+	JSONVersion string                `json:"json_version"`
+	ClusterName string                `json:"cluster_name"`
+	LogLevel    string                `json:"log_level"`
+	UpdateDate  string                `json:"update_date"`
+	Pgedge      *PgedgeDatabaseConfig `json:"pgedge"`
+	NodeGroups  []*PgedgeNode         `json:"node_groups"`
 }
 
 type PgedgeDatabaseConfig struct {
-	Databases []*PgedgeDatabase `json:"databases"`
 	PgVersion int               `json:"pg_version"`
-	AutoDDL   string            `json:"auto_ddl"`
 	AutoStart string            `json:"auto_start"`
+	Spock     *SpockConfig      `json:"spock"`
+	Databases []*PgedgeDatabase `json:"databases"`
+}
+
+type SpockConfig struct {
+	SpockVersion string `json:"spock_version"`
+	AutoDDL      string `json:"auto_ddl"`
 }
 
 type PgedgeDatabase struct {
-	Name     string `json:"name"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-type PgedgeNodeGroupsConfig struct {
-	Remote    []PgedgeLocalhostNodes `json:"remote,omitempty"`
-	Localhost []PgedgeLocalhostNodes `json:"localhost,omitempty"`
-}
-
-type PgedgeLocalhostNodes struct {
-	Nodes []PgedgeNode `json:"nodes"`
+	Name     string `json:"db_name"`
+	Username string `json:"db_user"`
+	Password string `json:"db_password"`
 }
 
 type PgedgeNode struct {
-	Name      string `json:"name"`
-	IsActive  bool   `json:"is_active"`
-	IPAddress string `json:"ip_address"`
-	Port      int    `json:"port"`
-	Path      string `json:"path"`
+	SSH       *PgedgeHostConfig `json:"ssh"`
+	Name      string            `json:"name"`
+	IsActive  string            `json:"is_active"`
+	PublicIP  string            `json:"public_ip"`
+	PrivateIP string            `json:"private_ip"`
+	Port      string            `json:"port"`
+	Path      string            `json:"path"`
+	Backrest  *PgedgeBackrest   `json:"backrest"`
+}
+
+type PgedgeHostConfig struct {
+	OSUser     string `json:"os_user"`
+	PrivateKey string `json:"private_key"`
+}
+
+type PgedgeBackrest struct {
+	Stanza            string `json:"stanza"`
+	RepoPath          string `json:"repo1-path"`
+	RepoRetentionFull string `json:"repo1-retention-full"`
+	LogLevelConsole   string `json:"log-level-console"`
+	RepoCypherType    string `json:"repo1-cipher-type"`
 }
 
 func (dbc *PgedgeDatabaseConfig) Sanitize() {
 	for _, database := range dbc.Databases {
 		database.Sanitize()
 	}
-}
-
-func (ng *PgedgeNodeGroupsConfig) Nodes() []PgedgeNode {
-	var nodes []PgedgeNode
-
-	if len(ng.Remote) != 0 {
-		for _, l := range ng.Remote {
-			nodes = append(nodes, l.Nodes...)
-		}
-		return nodes
-	}
-
-	for _, l := range ng.Localhost {
-		nodes = append(nodes, l.Nodes...)
-	}
-
-	return nodes
 }
 
 func (db *PgedgeDatabase) Sanitize() {
