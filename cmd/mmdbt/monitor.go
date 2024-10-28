@@ -15,6 +15,7 @@ import (
 
 func init() {
 	monitorCmd.Flags().String("pgedge-config", "", "The location of the pgEdge config file")
+	monitorCmd.Flags().Bool("include-mattermost-data", false, "Whether to monitor basic Mattermost table data or not")
 	monitorCmd.Flags().Duration("refresh-timer", 3*time.Second, "The amount of time between monitoring refreshes")
 }
 
@@ -24,8 +25,9 @@ var monitorCmd = &cobra.Command{
 	RunE: func(command *cobra.Command, args []string) error {
 		command.SilenceUsage = true
 
-		refreshTimer, _ := command.Flags().GetDuration("refresh-timer")
 		configLocation, _ := command.Flags().GetString("pgedge-config")
+		includeMattermost, _ := command.Flags().GetBool("include-mattermost-data")
+		refreshTimer, _ := command.Flags().GetDuration("refresh-timer")
 		config, err := model.NewClusterConfigFromFile(configLocation)
 		if err != nil {
 			return err
@@ -36,7 +38,7 @@ var monitorCmd = &cobra.Command{
 			return err
 		}
 
-		tui.StartMonitoring(refreshTimer, nodeStores, logger)
+		tui.StartMonitoring(refreshTimer, includeMattermost, nodeStores, logger)
 
 		return nil
 	},
