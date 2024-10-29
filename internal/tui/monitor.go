@@ -19,14 +19,15 @@ import (
 )
 
 type monitorModel struct {
-	nodeStores []*store.PgedgeNodeStore
-	table      *table.Table
-	timer      timer.Model
-	timeout    time.Duration
-	keymap     keymap
-	help       help.Model
-	quitting   bool
-	logger     log.FieldLogger
+	nodeStores            []*store.PgedgeNodeStore
+	table                 *table.Table
+	timer                 timer.Model
+	timeout               time.Duration
+	keymap                keymap
+	help                  help.Model
+	includeMattermostData bool
+	quitting              bool
+	logger                log.FieldLogger
 }
 
 type keymap struct {
@@ -46,7 +47,7 @@ func (m monitorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case timer.TimeoutMsg:
 		// Refresh the table view and restart timer.
-		table, err := buildMonitorTable(m.nodeStores)
+		table, err := buildMonitorTable(m.nodeStores, m.includeMattermostData)
 		if err != nil {
 			m.logger.WithError(err).Error("Error encountered during monitoring")
 			return m, tea.Quit
@@ -80,18 +81,19 @@ func (m monitorModel) View() string {
 	return s
 }
 
-func StartMonitoring(timeout time.Duration, nodeStores []*store.PgedgeNodeStore, logger log.FieldLogger) {
-	table, err := buildMonitorTable(nodeStores)
+func StartMonitoring(timeout time.Duration, includeMattermostData bool, nodeStores []*store.PgedgeNodeStore, logger log.FieldLogger) {
+	table, err := buildMonitorTable(nodeStores, includeMattermostData)
 	if err != nil {
 		logger.WithError(err).Error("Failed to build monitoring table")
 		os.Exit(1)
 	}
 
 	m := monitorModel{
-		nodeStores: nodeStores,
-		table:      table,
-		timer:      timer.NewWithInterval(timeout, time.Second),
-		timeout:    timeout,
+		nodeStores:            nodeStores,
+		includeMattermostData: includeMattermostData,
+		table:                 table,
+		timer:                 timer.NewWithInterval(timeout, time.Second),
+		timeout:               timeout,
 		keymap: keymap{
 			quit: key.NewBinding(
 				key.WithKeys("q", "ctrl+c"),
@@ -108,8 +110,10 @@ func StartMonitoring(timeout time.Duration, nodeStores []*store.PgedgeNodeStore,
 	}
 }
 
-func buildMonitorTable(nodeStores []*store.PgedgeNodeStore) (*table.Table, error) {
+func buildMonitorTable(nodeStores []*store.PgedgeNodeStore, includeMattermostData bool) (*table.Table, error) {
 	data := [][]string{}
+	var schemaVersion, users, teams, channels, posts string
+
 	for _, nodeStore := range nodeStores {
 		start := time.Now()
 
@@ -147,6 +151,23 @@ func buildMonitorTable(nodeStores []*store.PgedgeNodeStore) (*table.Table, error
 			fmt.Sprintf("%d", connections),
 		}
 
+		if includeMattermostData {
+			// Gather optional Mattermost data, but don't return on errors.
+			dbMigrations, err := nodeStore.Store.GetDBMigrations()
+			if err != nil || len(dbMigrations) == 0 {
+				schemaVersion = "n/a"
+			} else {
+				schemaVersion = fmt.Sprintf("%d", dbMigrations[len(dbMigrations)-1].Version)
+			}
+
+			users = getCountString(nodeStore.Store.GetUsersTableCount)
+			teams = getCountString(nodeStore.Store.GetTeamsTableCount)
+			channels = getCountString(nodeStore.Store.GetChannelsTableCount)
+			posts = getCountString(nodeStore.Store.GetPostsTableCount)
+
+			row = append(row, schemaVersion, users, teams, channels, posts)
+		}
+
 		data = append(data, row)
 	}
 
@@ -154,6 +175,9 @@ func buildMonitorTable(nodeStores []*store.PgedgeNodeStore) (*table.Table, error
 	baseStyle := re.NewStyle().Padding(0, 1)
 	headerStyle := baseStyle.Foreground(lipgloss.Color("252")).Bold(true)
 	headers := []string{"Node", "Spock", "Compute Time", "Replication", "Lag", "DB Conns"}
+	if includeMattermostData {
+		headers = append(headers, []string{"MM Schema", "Users", "Teams", "Channels", "Posts"}...)
+	}
 
 	capitalizeHeaders := func(data []string) []string {
 		for i := range data {
@@ -176,4 +200,13 @@ func buildMonitorTable(nodeStores []*store.PgedgeNodeStore) (*table.Table, error
 		})
 
 	return t, nil
+}
+
+func getCountString(countFunc func() (int64, error)) string {
+	count, err := countFunc()
+	if err != nil {
+		return "n/a"
+	}
+
+	return fmt.Sprintf("%d", count)
 }
