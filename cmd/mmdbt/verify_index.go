@@ -16,7 +16,7 @@ import (
 func init() {
 	verifyIndexesCmd.Flags().String("pgedge-config", "", "The location of the pgEdge config file")
 	verifyIndexesCmd.Flags().String("schema-name", "public", "The database schema to compare indexes on")
-	verifyIndexesCmd.Flags().Bool("fix-missing", true, "Create missing indexes")
+	verifyIndexesCmd.Flags().Bool("fix-missing", false, "Create missing indexes")
 }
 
 var verifyIndexesCmd = &cobra.Command{
