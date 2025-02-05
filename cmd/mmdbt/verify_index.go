@@ -16,6 +16,7 @@ import (
 func init() {
 	verifyIndexesCmd.Flags().String("pgedge-config", "", "The location of the pgEdge config file")
 	verifyIndexesCmd.Flags().String("schema-name", "public", "The database schema to compare indexes on")
+	verifyIndexesCmd.Flags().Bool("fix-missing", false, "Create missing indexes")
 }
 
 var verifyIndexesCmd = &cobra.Command{
@@ -30,6 +31,7 @@ var verifyIndexesCmd = &cobra.Command{
 			return err
 		}
 
+		fixMissing, _ := command.Flags().GetBool("fix-missing")
 		schemaName, _ := command.Flags().GetString("schema-name")
 		indexFilter := &model.PgIndexFilter{SchemaName: schemaName}
 
@@ -65,6 +67,19 @@ var verifyIndexesCmd = &cobra.Command{
 					logger.Info("All indexes found")
 				} else {
 					logger.Warnf("%d indexes missing: %s", len(missing), strings.Join(missing, ", "))
+					if fixMissing {
+						for _, m := range missing {
+							logger.Infof("Creating missing index %s", m)
+							store, err := nodeStores.GetStoreForNode(targetName)
+							if err != nil {
+								return err
+							}
+							err = store.CreateIndex(sourceIndexes[m])
+							if err != nil {
+								return err
+							}
+						}
+					}
 				}
 			}
 		}
