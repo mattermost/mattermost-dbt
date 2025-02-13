@@ -132,9 +132,12 @@ func buildMonitorTable(nodeStores []*store.PgedgeNodeStore, includeMattermostDat
 			return nil, errors.Wrap(err, "failed to get spock replication status")
 		}
 
+		// Lag data is sometimes not present. Proceed without the data for
+		// each refresh cycle when an error is received.
+		spockLag := "n/a"
 		lag, err := nodeStore.Store.GetSpockLag()
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to get spock lag")
+		if err == nil {
+			spockLag = lag.ReplicationLag
 		}
 
 		connections, err := nodeStore.Store.GetConnectionCount()
@@ -147,7 +150,7 @@ func buildMonitorTable(nodeStores []*store.PgedgeNodeStore, includeMattermostDat
 			fmt.Sprintf("%s (%s)", version.Version, versionNum.VersionNum),
 			fmt.Sprintf("%d milliseconds", time.Since(start).Milliseconds()),
 			fmt.Sprintf("%s [%s]", status.SubscriptionName, status.Status),
-			fmt.Sprintf("%s [%s]", lag.CommitLSN, lag.ReplicationLag),
+			spockLag,
 			fmt.Sprintf("%d", connections),
 		}
 

@@ -39,7 +39,6 @@ type SpockStatus struct {
 
 type SpockLagTracker struct {
 	SlotName        string `json:"slot_name" db:"slot_name"`
-	CommitLSN       string `json:"commit_lsn" db:"commit_lsn"`
 	CommitTimestamp string `json:"commit_timestamp" db:"commit_timestamp"`
 	ReplicationLag  string `json:"replication_lag" db:"replication_lag"`
 }
@@ -48,7 +47,7 @@ func init() {
 	spockVersionSelect = sq.Select("spock_version").From(spockVersionFunction)
 	spockVersionNumSelect = sq.Select("spock_version_num").From(spockVersionNumFunction)
 	spockReplicationSelect = sq.Select("subscription_name", "status", "replication_sets").From(spockReplicationFunction)
-	spockLagTrackerSelect = sq.Select("slot_name", "commit_lsn", "commit_timestamp", "replication_lag").From(spockLagTrackerTable)
+	spockLagTrackerSelect = sq.Select("slot_name", "commit_timestamp", "replication_lag").From(spockLagTrackerTable)
 }
 
 func (sqlStore *SQLStore) GetSpockVersion() (*SpockVersion, error) {
