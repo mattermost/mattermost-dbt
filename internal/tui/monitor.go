@@ -137,7 +137,7 @@ func buildMonitorTable(nodeStores []*store.PgedgeNodeStore, includeMattermostDat
 		spockLag := "n/a"
 		lag, err := nodeStore.Store.GetSpockLag()
 		if err == nil {
-			spockLag = lag.ReplicationLag
+			spockLag = lag.ReplicationLagBytes
 		}
 
 		connections, err := nodeStore.Store.GetConnectionCount()
@@ -177,7 +177,7 @@ func buildMonitorTable(nodeStores []*store.PgedgeNodeStore, includeMattermostDat
 	re := lipgloss.NewRenderer(os.Stdout)
 	baseStyle := re.NewStyle().Padding(0, 1)
 	headerStyle := baseStyle.Foreground(lipgloss.Color("252")).Bold(true)
-	headers := []string{"Node", "Spock", "Compute Time", "Replication", "Lag", "DB Conns"}
+	headers := []string{"Node", "Spock", "Compute Time", "Replication", "Lag Bytes", "DB Conns"}
 	if includeMattermostData {
 		headers = append(headers, []string{"MM Schema", "Users", "Teams", "Channels", "Posts"}...)
 	}
