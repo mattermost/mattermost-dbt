@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Basic pgbouncer setup script for standard Ubuntu EC2 instance.
 # Usage: install-pgbouncer.sh HOST_IP_OR_DNS PGBOUNCER_INI PGBOUNCER_USERLIST
@@ -12,7 +13,7 @@ HOST=$1
 INI=$2
 USERLIST=$3
 
-if [ -z "$HOST" ] || [ -z "$INI" ] || [ -z "$USERLIST"]; then
+if [ -z "$HOST" ] || [ -z "$INI" ] || [ -z "$USERLIST" ]; then
     echo "Usage: install-pgbouncer.sh HOST_IP_OR_DNS PGBOUNCER_INI PGBOUNCER_USERLIST"
     echo "Error: missing input value"
     exit 1
